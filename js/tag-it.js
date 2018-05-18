@@ -531,17 +531,19 @@
             }
         },
 
-        removeTag: function(tag, animate) {
+        removeTag: function(tag, animate, options) {
             animate = typeof animate === 'undefined' ? this.options.animate : animate;
+            var _options = typeof options === 'undefined' ? {silent: false} : options;
 
             tag = $(tag);
 
             // DEPRECATED.
-            this._trigger('onTagRemoved', null, tag);
+            if(!_options.silent)
+                this._trigger('onTagRemoved', null, tag);
 
-            if (this._trigger('beforeTagRemoved', null, {tag: tag, tagLabel: this.tagLabel(tag)}) === false) {
-                return;
-            }
+            if(!_options.silent)
+                if (this._trigger('beforeTagRemoved', null, {tag: tag, tagLabel: this.tagLabel(tag)}) === false)
+                    return;
 
             if (this.options.singleField) {
                 var tags = this.assignedTags();
@@ -559,13 +561,16 @@
                 var thisTag = this;
                 hide_args.push(function() {
                     tag.remove();
-                    thisTag._trigger('afterTagRemoved', null, {tag: tag, tagLabel: thisTag.tagLabel(tag)});
+
+                    if(!_options.silent)
+                        thisTag._trigger('afterTagRemoved', null, {tag: tag, tagLabel: thisTag.tagLabel(tag)});
                 });
 
                 tag.fadeOut('fast').hide.apply(tag, hide_args).dequeue();
             } else {
                 tag.remove();
-                this._trigger('afterTagRemoved', null, {tag: tag, tagLabel: this.tagLabel(tag)});
+                if(!_options.silent)
+                    this._trigger('afterTagRemoved', null, {tag: tag, tagLabel: this.tagLabel(tag)});
             }
 
         },
@@ -578,11 +583,11 @@
             this.removeTag(toRemove, animate);
         },
 
-        removeAll: function() {
+        removeAll: function(options) {
             // Removes all tags.
             var that = this;
             this._tags().each(function(index, tag) {
-                that.removeTag(tag, false);
+                that.removeTag(tag, false, options);
             });
         }
 
